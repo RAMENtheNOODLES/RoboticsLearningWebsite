@@ -10,7 +10,6 @@ enum Role {
   USER
 }
 
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,35 +20,35 @@ datasource db {
 }
 
 model User {
-  Id            Int           @id @default(autoincrement())
-  createdAt     DateTime      @default(now())
-  email         String        @unique
-  username      String        @default(uuid())
+  Id            Int          @id @default(autoincrement())
+  createdAt     DateTime     @default(now())
+  email         String       @unique
+  username      String       @default(uuid())
   password      String
-  role          Role          @default(USER)
-  classes       Classes[]     @relation(name: "class")
-  myClasses     Classes[]     @relation(name: "teacher")
-  assignments   Assignment[]  @relation(name: "assignment")
-  myAssignments Assignment[]  @relation(name: "createdAssignment")
+  role          Role         @default(USER)
+  classes       Classes[]    @relation(name: "class")
+  myClasses     Classes[]    @relation(name: "teacher")
+  assignments   Assignment[] @relation(name: "assignment")
+  myAssignments Assignment[] @relation(name: "createdAssignment")
 }
 
 model Classes {
-  Id            Int           @id @default(autoincrement())
-  createdAt     DateTime      @default(now())
-  teacherId     Int
-  teacher       User          @relation(name: "teacher", fields: [teacherId], references: [Id])
-  title         String        @unique
-  description   String
-  users         User[]        @relation(name: "class")
-  assignments   Assignment[]  @relation(name: "assignments")
+  Id          Int          @id @default(autoincrement())
+  createdAt   DateTime     @default(now())
+  teacherId   Int
+  teacher     User         @relation(name: "teacher", fields: [teacherId], references: [Id])
+  title       String       @unique
+  description String
+  users       User[]       @relation(name: "class")
+  assignments Assignment[] @relation(name: "assignments")
 }
 
 model Assignment {
-  Id            Int           @id @default(autoincrement())
-  createdAt     DateTime      @default(now())
-  classId       Int
-  assigner      Int
-  teacher       User          @relation(name: "createdAssignment", fields: [assigner], references: [Id])
-  students      User[]        @relation(name: "assignment")
-  class         Classes       @relation(name: "assignments", fields: [classId], references: [Id])
+  Id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  classId   Int
+  assigner  Int
+  teacher   User     @relation(name: "createdAssignment", fields: [assigner], references: [Id])
+  students  User[]   @relation(name: "assignment")
+  class     Classes  @relation(name: "assignments", fields: [classId], references: [Id])
 }
