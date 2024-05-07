@@ -4,11 +4,52 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+enum Role {
+  ADMIN
+  TEACHER
+  USER
+}
+
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  Id            Int           @id @default(autoincrement())
+  createdAt     DateTime      @default(now())
+  email         String        @unique
+  username      String        @default(uuid())
+  password      String
+  role          Role          @default(USER)
+  classes       Classes[]     @relation(name: "class")
+  myClasses     Classes[]     @relation(name: "teacher")
+  assignments   Assignment[]  @relation(name: "assignment")
+  myAssignments Assignment[]  @relation(name: "createdAssignment")
+}
+
+model Classes {
+  Id            Int           @id @default(autoincrement())
+  createdAt     DateTime      @default(now())
+  teacherId     Int
+  teacher       User          @relation(name: "teacher", fields: [teacherId], references: [Id])
+  title         String        @unique
+  description   String
+  users         User[]        @relation(name: "class")
+  assignments   Assignment[]  @relation(name: "assignments")
+}
+
+model Assignment {
+  Id            Int           @id @default(autoincrement())
+  createdAt     DateTime      @default(now())
+  classId       Int
+  assigner      Int
+  teacher       User          @relation(name: "createdAssignment", fields: [assigner], references: [Id])
+  students      User[]        @relation(name: "assignment")
+  class         Classes       @relation(name: "assignments", fields: [classId], references: [Id])
 }
