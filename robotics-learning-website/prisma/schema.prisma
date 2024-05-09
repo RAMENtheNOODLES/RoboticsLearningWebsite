@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlserver"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -24,6 +24,7 @@ model User {
   myClasses     Classes[]    @relation(name: "teacher")
   assignments   Assignment[] @relation(name: "assignment")
   myAssignments Assignment[] @relation(name: "createdAssignment")
+  myGrades      Grade[]      @relation(name: "student_assigned")
 }
 
 model Classes {
@@ -38,11 +39,23 @@ model Classes {
 }
 
 model Assignment {
-  Id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  classId   Int
-  assigner  Int
-  teacher   User     @relation(name: "createdAssignment", fields: [assigner], references: [Id], onUpdate: NoAction)
-  students  User[]   @relation(name: "assignment")
-  class     Classes  @relation(name: "assignments", fields: [classId], references: [Id])
+  Id                  Int      @id @default(autoincrement())
+  createdAt           DateTime @default(now())
+  classId             Int
+  assigner            Int
+  totalPointsPossible Int      @default(0)
+  teacher             User     @relation(name: "createdAssignment", fields: [assigner], references: [Id], onUpdate: NoAction)
+  students            User[]   @relation(name: "assignment")
+  grades              Grade[]  @relation(name: "grade")
+  class               Classes  @relation(name: "assignments", fields: [classId], references: [Id])
+}
+
+model Grade {
+  Id           Int        @id @default(autoincrement())
+  assignmentId Int
+  pointsEarned Int        @default(0)
+  totalPoints  Int        @default(0)
+  studentId    Int
+  student      User       @relation(name: "student_assigned", fields: [studentId], references: [Id])
+  assignment   Assignment @relation(name: "grade", fields: [assignmentId], references: [Id])
 }

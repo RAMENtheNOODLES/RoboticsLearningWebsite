@@ -7,6 +7,9 @@
 .yarn/install-state.gz
 
 .env
+migrations
+*.db
+*.db-journal
 
 # testing
 /coverage
