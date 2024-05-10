@@ -138,6 +138,16 @@ paths:
                     schema:
                         $ref: "#/components/schemas/User"
         put:
+            summary: "Update a user by ID"
+            description: "Update a user by ID in the database."
+            parameters:
+                - name: "id"
+                  in: "path"
+                  required: true
+                  description: "ID of the user to update"
+                  schema:
+                      type: "integer"
+                      format: "int64"
         requestBody:
             required: true
             content:
