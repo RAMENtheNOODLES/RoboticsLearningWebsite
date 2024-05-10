@@ -1,33 +1,59 @@
 'use client'
 import Image from "next/image";
 import { Database } from "./utils/database"
+import { user, school_class } from "./utils/structures";
 
 //const db = new Database();
 
-function AddTestUserBtn() {
+function GetUserBtn() {
   function handleClick() {
     //alert("You clicked me!");
-    fetch("/api/database_api", {
+    fetch("/api/get_user", {
       method: "POST",
       headers: {
         'Accept': "application/json",
         'Content-Type': "application/json"
       },
       body: JSON.stringify({
-        test: 'test'
+        userID: 1
       })
     }).then((r) => {
       if (r.ok)
         r.json().then((data?: any, e?: Error) => {
           if (data)
-            alert(data["message"])
+            alert(user.fromJSON(data["user"]))
         })
     })
   }
 
   return (
     <button onClick={handleClick} >
-      click me
+      Get user
+    </button>
+  )
+}
+
+function GetAllClassesBtn() {
+  function handleClick() {
+    //alert("You clicked me!");
+    fetch("/api/get_all_classes", {
+      method: "POST",
+      headers: {
+        'Accept': "application/json",
+        'Content-Type': "application/json"
+      }
+    }).then((r) => {
+      if (r.ok)
+        r.json().then((data?: any, e?: Error) => {
+          if (data)
+            alert(data["class"][0].toString())
+        })
+    })
+  }
+
+  return (
+    <button onClick={handleClick} >
+      Get all classes
     </button>
   )
 }
@@ -38,7 +64,8 @@ export default function Home() {
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
         <h1>Hello world</h1>
         <p>User 1:</p>
-        <AddTestUserBtn/>
+        <GetUserBtn />
+        <GetAllClassesBtn/>
       </div>
     </main>
   );
