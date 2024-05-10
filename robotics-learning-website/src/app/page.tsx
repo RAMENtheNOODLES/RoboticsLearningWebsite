@@ -8,7 +8,7 @@ import { user, school_class } from "./utils/structures";
 function GetUserBtn() {
   function handleClick() {
     //alert("You clicked me!");
-    fetch("/api/get_user", {
+    fetch("/api/users", {
       method: "POST",
       headers: {
         'Accept': "application/json",

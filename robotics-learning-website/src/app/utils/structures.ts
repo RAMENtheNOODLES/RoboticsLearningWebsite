@@ -32,8 +32,7 @@ export class assignment {
     }
 
     static fromJSON(d: Object): assignment {
-        const o = Object.assign(new assignment(), d)
-        return o
+        return Object.assign(new assignment(), d)
     }
 
     toString() {
@@ -64,8 +63,7 @@ export class grade {
     }
 
     static fromJSON(d: Object): assignment {
-        const o = Object.assign(new assignment(), d)
-        return o
+        return Object.assign(new assignment(), d)
     }
 
     toString() {
@@ -109,8 +107,7 @@ export class user {
     }
 
     static fromJSON(d: Object): user {
-        const o = Object.assign(new user(), d)
-        return o
+        return Object.assign(new user(), d)
     }
 
     toString() {
@@ -143,8 +140,7 @@ export class school_class {
     }
 
     static fromJSON(d: Object): assignment {
-        const o = Object.assign(new assignment(), d)
-        return o
+        return Object.assign(new assignment(), d)
     }
 
     toString() {

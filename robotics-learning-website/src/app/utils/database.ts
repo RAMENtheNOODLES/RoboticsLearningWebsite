@@ -193,7 +193,7 @@ export class Database {
     }
 
     /**
-     * Returns a list of Id's of all the assignments a student has
+     * Returns a list of ID's of all the assignments a student has
      * @param studentID the id of the student
      * @returns a list of the id's of the assignments the student has
      */

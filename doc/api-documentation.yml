@@ -20,6 +20,8 @@ components:
             type: "string"
           role:
             type: "integer"
+            minimum: 0
+            maximum: 2
           createdAt:
             type: "string"
             format: "date-time"
@@ -66,6 +68,8 @@ components:
             type: "string"
           role:
             type: "integer"
+            minimum: 0
+            maximum: 2
       UserUpdate:
         type: "object"
         properties:
@@ -78,6 +82,8 @@ components:
             type: "string"
           role:
             type: "integer"
+            minimum: 0
+            maximum: 2
       UserLogin:
         type: "object"
         required:
@@ -93,6 +99,7 @@ components:
         properties:
           id:
             format: "int64"
+            minimum: 1
           name:
             type: "string"
           description:
@@ -125,6 +132,7 @@ components:
           properties:
             id:
               type: "int64"
+              minimum: 1
       ClassList:
         type: "array"
         items:
@@ -211,6 +219,14 @@ paths:
           schema:
             type: "integer"
             format: "int64"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auth-key: "string"
       responses:
         "200":
           description: "User deleted successfully"
@@ -235,6 +251,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserToken"
+  /users/create:
+    post:
+      summary: "Create a user"
+      description: "Create a user and get it's ID."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
 
   /classes:
     get:
