@@ -19,24 +19,20 @@ export class Database {
      */
     getUsers() {
         let out: User[] = []
-        this.prisma.$connect().then(() => {
-            this.prisma.user.findMany().then((users) => {
-                users.forEach((user) => {
-                    out.push(user)
-                })
-            }).finally(() => this.prisma.$disconnect());
-        })
+        this.prisma.user.findMany().then((users) => {
+            users.forEach((user) => {
+                out.push(user)
+            })
+        }).finally(() => this.prisma.$disconnect());
 
         return out;
     }
 
     getClasses() {
         let out = null;
-        this.prisma.$connect().then(() => {
-            this.prisma.classes.findMany().then((classes) => {
-                out = classes;
-            }).finally(() => this.prisma.$disconnect());
-        })
+        this.prisma.classes.findMany().then((classes) => {
+            out = classes;
+        }).finally(() => this.prisma.$disconnect());
 
         return out;
     }
@@ -44,15 +40,13 @@ export class Database {
     getClassTitle(classID: number) {
         let out = "";
 
-        this.prisma.$connect().then(() => {
-            this.prisma.classes.findFirst({
-                where: {
-                    Id: classID
-                }
-            }).then((c) => {
-                if (c)
-                    out = c.title
-            })
+        this.prisma.classes.findFirst({
+            where: {
+                Id: classID
+            }
+        }).then((c) => {
+            if (c)
+                out = c.title
         }).finally(() => this.prisma.$disconnect());
 
         return out;
@@ -61,11 +55,9 @@ export class Database {
     getAssignments() {
         let out = null;
 
-        this.prisma.$connect().then(() => {
-            this.prisma.assignment.findMany().then((assignments) => {
-                out = assignments;
-            }).finally(() => this.prisma.$disconnect());
-        });
+        this.prisma.assignment.findMany().then((assignments) => {
+            out = assignments;
+        }).finally(() => this.prisma.$disconnect());
 
         return out;
     }
@@ -73,16 +65,14 @@ export class Database {
     getStudentUsername(studentID: number) {
         let out = "";
 
-        this.prisma.$connect().then(() => {
-            this.prisma.user.findFirst({
-                where: {
-                    Id: studentID,
-                    role: Role.STUDENT
-                }
-            }).then((student) => {
-                if (student)
-                    out = student.username;
-            })
+        this.prisma.user.findFirst({
+            where: {
+                Id: studentID,
+                role: Role.STUDENT
+            }
+        }).then((student) => {
+            if (student)
+                out = student.username;
         }).finally(() => this.prisma.$disconnect());
 
         return out;
@@ -96,21 +86,19 @@ export class Database {
     getStudentsAssignments(studentID: number) {
         let out: number[] = [];
 
-        this.prisma.$connect().then(() => {
-            this.prisma.user.findFirst({
-                where: {
-                    Id: studentID
-                },
-                include: {
-                    myAssignments: true
-                }
-            }).then((user) => {
-                if (user) {
-                    user.myAssignments.forEach((assignment) => {
-                        out.push(assignment.Id);
-                    })
-                }  
-            })
+        this.prisma.user.findFirst({
+            where: {
+                Id: studentID
+            },
+            include: {
+                myAssignments: true
+            }
+        }).then((user) => {
+            if (user) {
+                user.myAssignments.forEach((assignment) => {
+                    out.push(assignment.Id);
+                })
+            }  
         }).finally(() => this.prisma.$disconnect());
 
         return out;
@@ -123,23 +111,21 @@ export class Database {
      */
     getStudentsAssignedToAssignment(assignmentID: number) {
         let out: number[] = [];
-        this.prisma.$connect().then(() => {
-            this.prisma.assignment.findFirstOrThrow({
-                where: {
-                    Id: assignmentID
-                },
-                include: {
-                    students: true
-                }
-            }).then((assignment) => {
-                assignment.students.forEach((student) => {
-                    if (student.role == Role.STUDENT)
-                        out.push(student.Id);
-                });
-            }).catch(() => {
-                this.prisma.$disconnect();
-                return out;
-            })
+        this.prisma.assignment.findFirstOrThrow({
+            where: {
+                Id: assignmentID
+            },
+            include: {
+                students: true
+            }
+        }).then((assignment) => {
+            assignment.students.forEach((student) => {
+                if (student.role == Role.STUDENT)
+                    out.push(student.Id);
+            });
+        }).catch(() => {
+            this.prisma.$disconnect();
+            return out;
         }).finally(() => this.prisma.$disconnect());
 
         return out;
