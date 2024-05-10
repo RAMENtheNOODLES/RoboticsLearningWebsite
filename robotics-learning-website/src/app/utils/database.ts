@@ -146,7 +146,7 @@ export class Database {
     }
 
     async getClass(classId: number): Promise<school_class|null> {
-        return await this.prisma.classes.findFirst({
+        return this.prisma.classes.findFirst({
             where: {
                 Id: classId
             },
@@ -159,12 +159,12 @@ export class Database {
             if (c) {
                 this.getUser(c.teacher.Id).then((teacher) => {
                     if (teacher)
-                        return new school_class(c.Id, c.createdAt, c.teacherId, 
+                        return new school_class(c.Id, c.createdAt, c.teacherId,
                             teacher, c.title, c.description)
                 });
             }
             return null;
-        })
+        });
     }
 
     getAssignment(assignmentId: number): assignment|null {
@@ -256,7 +256,7 @@ export class Database {
 
     async addNewUser(u: user): Promise<number> {
         if (u.Id != -1)
-            return await this.prisma.user.create({
+            return this.prisma.user.create({
                 data: {
                     Id: u.Id,
                     username: u.username,
@@ -266,9 +266,9 @@ export class Database {
                 }
             }).then(() => {
                 return u.Id;
-            })
+            });
 
-        return await this.prisma.user.create({
+        return this.prisma.user.create({
             data: {
                 username: u.username,
                 email: u.email,
@@ -284,6 +284,6 @@ export class Database {
             if (_user)
                 return _user.Id;
             return -1;
-        })
+        });
     }
 }
