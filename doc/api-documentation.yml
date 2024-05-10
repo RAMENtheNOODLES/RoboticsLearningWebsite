@@ -19,10 +19,7 @@ components:
           password:
             type: "string"
           role:
-            type: "string"
-          enum:
-              - "admin"
-              - "user"
+            type: "integer"
           createdAt:
             type: "string"
             format: "date-time"
@@ -32,10 +29,10 @@ components:
         UserCreate:
         type: "object"
         required:
-            - "username"
-            - "email"
-            - "password"
-            - "role"
+          - "username"
+          - "email"
+          - "password"
+          - "role"
         UserUpdate:
         UserLogin:
       UserToken:
@@ -68,10 +65,7 @@ components:
           password:
             type: "string"
           role:
-            type: "string"
-            enum:
-              - "admin"
-              - "user"
+            type: "integer"
       UserUpdate:
         type: "object"
         properties:
@@ -83,10 +77,7 @@ components:
           password:
             type: "string"
           role:
-            type: "string"
-            enum:
-              - "admin"
-              - "user"
+            type: "integer"
       UserLogin:
         type: "object"
         required:
@@ -98,94 +89,196 @@ components:
             format: "email"
           password:
             type: "string"
+      Class:
+        properties:
+          id:
+            format: "int64"
+          name:
+            type: "string"
+          description:
+            type: "string"
+          createdAt:
+            type: "string"
+            format: "date-time"
+          updatedAt:
+            type: "string"
+            format: "date-time"
+        ClassCreate:
+          type: "object"
+          required:
+            - "name"
+            - "description"
+          properties:
+            name:
+              type: "string"
+            description:
+              type: "string"
+        ClassUpdate:
+        ClassList:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Class"
+        ClassDelete:
+          type: "object"
+          required:
+            - "id"
+          properties:
+            id:
+              type: "int64"
+      ClassList:
+        type: "array"
+        items:
+          $ref: "#/components/schemas/Class"
+      ClassCreate:
+        type: "object"
+        required:
+          - "name"
+          - "description"
+        properties:
+          name:
+            type: "string"
+          description:
+            type: "string"
+      ClassDelete:
+        type: "object"
+        required:
+          - "id"
+        items:
+          $ref: "#/components/schemas/Class"
 openapi: "3.1.0"
 paths:
-    /users:
-      get:
-        summary: "Get all users"
-        description: "Get all users in the database."
-        responses:
-            "200":
-              description: "Successful response"
-              content:
-                  application/json:
-                    schema:
-                        $ref: "#/components/schemas/UserList"
-        post:
-      requestBody:
-            required: true
-            content:
+  /users:
+    get:
+      summary: "Get all users"
+      description: "Get all users in the database."
+      responses:
+        "200":
+          description: "Successful response"
+          content:
             application/json:
-                schema:
-                $ref: "#/components/schemas/UserCreate"
-    /users/{id}:
-      get:
-        summary: "Get a user by ID"
-        description: "Get a user by ID from the database."
-        parameters:
-            - name: "id"
-              in: "path"
-              required: true
-              description: "ID of the user to get"
               schema:
-                  type: "integer"
-                  format: "int64"
-        responses:
-            "200":
-              description: "Successful response"
-              content:
-                  application/json:
-                    schema:
-                        $ref: "#/components/schemas/User"
-        put:
-            summary: "Update a user by ID"
-            description: "Update a user by ID in the database."
-            parameters:
-                - name: "id"
-                  in: "path"
-                  required: true
-                  description: "ID of the user to update"
-                  schema:
-                      type: "integer"
-                      format: "int64"
-        requestBody:
-            required: true
-            content:
-              application/json:
-                  schema:
-                  $ref: "#/components/schemas/UserUpdate"
-      delete:
-        summary: "Delete a user by ID"
-        description: "Delete a user by ID from the database."
-        parameters:
-            - name: "id"
-              in: "path"
-              required: true
-              description: "ID of the user to delete"
+                $ref: "#/components/schemas/UserList"
+    requestBody:
+      required: true
+      content:
+      application/json:
+        schema:
+        $ref: "#/components/schemas/UserCreate"
+  /users/{id}:
+    get:
+      summary: "Get a user by ID"
+      description: "Get a user by ID from the database."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "ID of the user to get"
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "Successful response"
+          content:
+            application/json:
               schema:
-                  type: "integer"
-                  format: "int64"
-        responses:
-            "200":
-              description: "User deleted successfully"
-              content:
-                  application/json:
-                  schema:
-                  $ref: "#/components/schemas/User"
-    /users/login:
-        post:
-          summary: "Login a user"
-          description: "Login a user and get a token."
-          requestBody:
-              required: true
-              content:
-                application/json:
-                    schema:
-                    $ref: "#/components/schemas/UserLogin"
-        responses:
-            "200":
-            description: "User logged in successfully"
-            content:
-                application/json:
-                schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: "Update a user by ID"
+      description: "Update a user by ID in the database."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "ID of the user to update"
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+    delete:
+      summary: "Delete a user by ID"
+      description: "Delete a user by ID from the database."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "ID of the user to delete"
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "User deleted successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users/login:
+    post:
+      summary: "Login a user"
+      description: "Login a user and get a token."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        "200":
+          description: "User logged in successfully"
+          content:
+            application/json:
+              schema:
                 $ref: "#/components/schemas/UserToken"
+
+  /classes:
+    get:
+      summary: "Get all classes"
+      description: "Get all classes in the database."
+      responses:
+        "200":
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassList"
+    post:
+      summary: "Create a class"
+      description: "Create a class in the database."
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassCreate"
+  /classes/{id}:
+    delete:
+      summary: "Delete a class by ID"
+      description: "Delete a class in the database."
+      responses:
+        200:
+          description: "Successful response"
+          $ref: "#/components/schemas/ClassDelete"
+      parameters:
+        - name: id
+          description: "ID of the class to delete"
+          in: path
+          required: true
+          content:
+            application/json:
+              schema:
+                type: integer
+                minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auth-key: "string"
