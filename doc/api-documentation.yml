@@ -7,6 +7,39 @@ info:
     email: "contact@cookiejar499.me"
 components:
     schemas:
+      Assignments:
+        description: "Array of Assignments"
+        type: "array"
+        items:
+          $ref: "#/components/schemas/Assignment"
+      Assignment:
+        description: "Assignment"
+        properties:
+          id:
+            type: "integer"
+            format: "int64"
+          createdAt:
+            type: "DateTime"
+          classId:
+            type: "integer"
+            format: "int64"
+          assignerId:
+            type: "integer"
+            format: "int64"
+          totalPointsPossible:
+            type: "integer"
+            format: "int64"
+        required:
+          - "classId"
+          - "assignerId"
+          - "totalPointsPossible"
+        example:
+          id: 1
+          createdAt: "2024-05-11T18:45:19.000Z"
+          classId: 1
+          assignerId: 1
+          totalPointsPossible: 100
+
       User:
         properties:
           id:
@@ -29,12 +62,12 @@ components:
             type: "string"
             format: "date-time"
         UserCreate:
-        type: "object"
-        required:
-          - "username"
-          - "email"
-          - "password"
-          - "role"
+          type: "object"
+          required:
+            - "username"
+            - "email"
+            - "password"
+            - "role"
         UserUpdate:
         UserLogin:
       UserToken:
@@ -155,6 +188,51 @@ components:
           $ref: "#/components/schemas/Class"
 openapi: "3.1.0"
 paths:
+  /assignments/{id}:
+    get:
+      summary: "Retrieve an assignment by id"
+      description: "Retrieves an assignment by id from the database."
+      responses:
+        200:
+          description: "Successfully retrieved an assignment with id: {id}"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+  /assignments:
+    post:
+      summary: "Create a new assignment"
+      description: "Create a new assignment in the database"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Assignment"
+      responses:
+        200:
+          description: "Successfully created a new assignment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+    get:
+      summary: "Get all assignments"
+      description: "Get all assignments in the database."
+      responses:
+        500:
+          description: "Could not retrieve assignments from the database"
+          content:
+            application/text:
+              schema:
+                type: "string"
+                example:
+                  "Could not retrieve assignment with id: 100"
+        200:
+          description: Successfully got all the assignments in the database
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignments"
   /users:
     get:
       summary: "Get all users"

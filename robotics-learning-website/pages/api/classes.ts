@@ -3,7 +3,7 @@ import { school_class } from "@/app/utils/structures";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type ResponseData = {
-    class?: school_class[],
+    classes?: school_class[],
     error?: string
 }
 
@@ -15,7 +15,7 @@ export default function handler(
 
     db.getAllClasses().then((classes) => {
         if (classes !== undefined)
-            res.status(200).json({ class: classes })
+            res.status(200).json({ classes: classes })
         else
             res.status(500).end();
     })

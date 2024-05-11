@@ -117,30 +117,37 @@ export class user {
 
 export class school_class {
     Id: number
-    createdAt: Date
+    createdAt: Date|null
     teacherId: number
-    teacher: user
+    teacher: user|null
     title: string
     description: string
     users: user[]
     assignments: assignment[]
 
+    constructor()
+    constructor(id?: number, created_at?: Date, teacherId?: number, teacher?: user, title?: string)
     constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string)
     constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description?: string)
-    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description?: string,
-        users?: user[], assignments?: assignment[]) {
-            this.Id = id;
-            this.createdAt = created_at;
-            this.teacherId = teacherId;
-            this.teacher = teacher;
-            this.title = title;
+    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description: string)
+    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description: string,
+        users?: user[], assignments?: assignment[])
+    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description: string,
+                users: user[], assignments: assignment[])
+    constructor(id?: number, created_at?: Date, teacherId?: number, teacher?: user, title?: string, description?: string,
+                users?: user[], assignments?: assignment[]) {
+            this.Id = id ? id : -1;
+            this.createdAt = created_at ? created_at : null;
+            this.teacherId = teacherId ? teacherId : -1;
+            this.teacher = teacher ? teacher : null;
+            this.title = title ? title : "";
             this.description = description ? description : ""
             this.users = users ? users : []
             this.assignments = assignments ? assignments : []
     }
 
-    static fromJSON(d: Object): assignment {
-        return Object.assign(new assignment(), d)
+    static fromJSON(d: Object): school_class {
+        return Object.assign(new school_class(), d)
     }
 
     toString() {

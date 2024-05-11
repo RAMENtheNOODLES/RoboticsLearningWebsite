@@ -1,5 +1,5 @@
 'use client'
-import { user } from "./utils/structures";
+import {school_class, user} from "./utils/structures";
 
 //const db = new Database();
 
@@ -31,17 +31,17 @@ function GetUserBtn() {
 function GetAllClassesBtn() {
   function handleClick() {
     //alert("You clicked me!");
-    fetch("/api/get_all_classes", {
-      method: "POST",
+    fetch("/api/classes", {
+      method: "GET",
       headers: {
         'Accept': "application/json",
         'Content-Type': "application/json"
       }
     }).then((r) => {
       if (r.ok)
-        r.json().then((data?: any, e?: Error) => {
+        r.json().then((data?: any) => {
           if (data)
-            alert(data["class"][0].toString())
+            alert(school_class.fromJSON(data["classes"][0]))
         })
     })
   }
