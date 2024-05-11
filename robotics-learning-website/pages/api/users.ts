@@ -23,7 +23,8 @@ export default function handler(
 
     switch (req.method) {
         case "GET":
-            res.status(200).json({users: db.getUsers()});
+            console.log(req.url)
+            db.getUsers().then((u) => {res.status(200).json({users: u});})
             return;
         case "POST":
             db.getUser(req.body["userID"]).then((u) => {

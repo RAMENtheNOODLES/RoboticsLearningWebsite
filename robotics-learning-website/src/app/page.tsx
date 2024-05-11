@@ -1,7 +1,5 @@
 'use client'
-import Image from "next/image";
-import { Database } from "./utils/database"
-import { user, school_class } from "./utils/structures";
+import { user } from "./utils/structures";
 
 //const db = new Database();
 
@@ -9,19 +7,16 @@ function GetUserBtn() {
   function handleClick() {
     //alert("You clicked me!");
     fetch("/api/users", {
-      method: "POST",
+      method: "GET",
       headers: {
         'Accept': "application/json",
         'Content-Type': "application/json"
-      },
-      body: JSON.stringify({
-        userID: 1
-      })
+      }
     }).then((r) => {
       if (r.ok)
-        r.json().then((data?: any, e?: Error) => {
+        r.json().then((data?: any) => {
           if (data)
-            alert(user.fromJSON(data["user"]))
+            alert(user.fromJSON(data["users"][0]))
         })
     })
   }

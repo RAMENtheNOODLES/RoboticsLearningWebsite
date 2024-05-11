@@ -14,10 +14,9 @@ export default function handler(
     const db = new Database();
 
     db.getAllClasses().then((classes) => {
-        if (classes)
-            res.status(200).json({ class: classes})
+        if (classes !== undefined)
+            res.status(200).json({ class: classes })
+        else
+            res.status(500).end();
     })
-
-    
-    res.status(501)//.json({ message: 'Hello from Next.js!'})
 }

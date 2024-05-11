@@ -1,6 +1,6 @@
-import { PrismaClient, User } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
-import { user, school_class, assignment, grade } from "@/app/utils/structures"
+import { user, school_class, assignment } from "@/app/utils/structures"
 
 export enum Role {
     STUDENT,
@@ -19,9 +19,8 @@ export class Database {
      * Retrieves all the users from the database
      * @returns a list of users from the database
      */
-    getUsers() {
-        let out: user[] = []
-        this.prisma.user.findMany({
+    async getUsers() {
+        const users = await this.prisma.user.findMany({
             include: {
                 assignments: true,
                 classes: true,
@@ -29,15 +28,14 @@ export class Database {
                 myClasses: true,
                 myGrades: true
             }
-        }).then((users) => {
-            users.forEach((u) => {
-                out.push(new user(u.Id, u.createdAt, 
-                    u.email, u.username, u.password, u.role, this.getStudentsClasses(u.Id),
-                    [], this.getStudentsAssignments(u.Id), [], []))
-            })
-        }).finally(() => this.prisma.$disconnect());
-
-        return out;
+        });
+        let tmp: user[] = [];
+        users.forEach((u) => {
+            tmp.push(new user(u.Id, u.createdAt,
+                u.email, u.username, u.password, u.role, this.getStudentsClasses(u.Id),
+                [], this.getStudentsAssignments(u.Id), [], []));
+        });
+        return tmp;//.finally(() => this.prisma.$disconnect());
     }
 
     async getUser(userId: number): Promise<user> {
@@ -59,16 +57,20 @@ export class Database {
     }
 
     async getAllClasses() {
-        return await this.prisma.classes.findMany().then((classes) => {
-            let out: school_class[] = []
-            classes.forEach((c) => {
-                this.getClass(c.Id).then((c) => {
-                    if (c)
-                        out.push(c);
-                })
-            });
-            return out;
+        const classes = await this.prisma.classes.findMany({
+            include: {
+                teacher: true
+            }
         });
+
+        let tmp: school_class[] = []
+
+        for (const c of classes) {
+            const teacher = await this.getUser(c.teacherId);
+            tmp.push(new school_class(c.Id, c.createdAt, c.teacherId, teacher, c.title, c.description))
+        }
+
+        return tmp;
     }
 
     getClassTitle(classID: number) {
@@ -146,7 +148,7 @@ export class Database {
     }
 
     async getClass(classId: number): Promise<school_class|null> {
-        return this.prisma.classes.findFirst({
+        const c = await this.prisma.classes.findFirst({
             where: {
                 Id: classId
             },
@@ -155,16 +157,15 @@ export class Database {
                 teacher: true,
                 users: true
             }
-        }).then((c) => {
-            if (c) {
-                this.getUser(c.teacher.Id).then((teacher) => {
-                    if (teacher)
-                        return new school_class(c.Id, c.createdAt, c.teacherId,
-                            teacher, c.title, c.description)
-                });
-            }
-            return null;
         });
+
+        if (!c)
+            return null;
+
+        const teacher = await this.getUser(c.teacherId);
+
+        return new school_class(c.Id, c.createdAt, c.teacherId,
+            teacher, c.title, c.description)
     }
 
     getAssignment(assignmentId: number): assignment|null {
