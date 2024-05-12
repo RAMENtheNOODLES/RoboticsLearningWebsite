@@ -14,17 +14,23 @@ datasource db {
 }
 
 model User {
-  Id            Int          @id @default(autoincrement())
-  createdAt     DateTime     @default(now())
-  email         String       @unique
-  username      String       @default(uuid())
+  Id            Int            @id @default(autoincrement())
+  createdAt     DateTime       @default(now())
+  email         String         @unique
+  username      String         @unique @default(uuid())
   password      String
-  role          Int          @default(0)
-  classes       Classes[]    @relation(name: "class")
-  myClasses     Classes[]    @relation(name: "teacher")
-  assignments   Assignment[] @relation(name: "assignment")
-  myAssignments Assignment[] @relation(name: "createdAssignment")
-  myGrades      Grade[]      @relation(name: "student_assigned")
+  role          Int            @default(0)
+  authKey       String         @default("")
+  lastLogin     DateTime?
+  isLocked      Boolean        @default(false)
+  lockExpires   DateTime?
+  classes       Classes[]      @relation(name: "class")
+  myClasses     Classes[]      @relation(name: "teacher")
+  assignments   Assignment[]   @relation(name: "assignment")
+  myAssignments Assignment[]   @relation(name: "createdAssignment")
+  myGrades      Grade[]        @relation(name: "student_assigned")
+  session       Sessions[]     @relation(name: "session")
+  loginHistory  LoginHistory[] @relation(name: "login_history")
 }
 
 model Classes {
@@ -58,4 +64,24 @@ model Grade {
   studentId    Int
   student      User       @relation(name: "student_assigned", fields: [studentId], references: [Id])
   assignment   Assignment @relation(name: "grade", fields: [assignmentId], references: [Id])
+}
+
+model Sessions {
+  Id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  ipAddress String
+  userId    Int
+  user      User     @relation(name: "session", fields: [userId], references: [Id])
+  token     String   @unique
+  expires   DateTime
+}
+
+model LoginHistory {
+  Id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(name: "login_history", fields: [userId], references: [Id])
+  ipAddress String
+  numTries  Int
+  success   Boolean
 }

@@ -2,6 +2,8 @@ import {PrismaClient} from "@prisma/client";
 
 import {user, school_class, assignment, grade} from "@/app/utils/structures"
 
+import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+
 
 export enum Role {
     STUDENT,
@@ -9,11 +11,116 @@ export enum Role {
     ADMIN
 }
 
+export class AuthUtils {
+
+    static generateAuthKey(username: string, email: string, password: string): string {
+        const hashedUsername: string = AuthUtils.hashPassword(username);
+        const hashedEmail: string = AuthUtils.hashPassword(email);
+
+        return AuthUtils.hashPassword(`${hashedUsername}.${hashedEmail}.${password}`);
+    }
+
+    static generateToken(username: string, password: string): string {
+        return AuthUtils.hashPassword(`${username}.${password}.${randomBytes(16).toString('hex')}`);
+    }
+
+    static hashPassword(password: string): string {
+        const salt = randomBytes(16).toString('hex');
+        const buf = scryptSync(password, salt, 64);
+        return `${buf.toString('hex')}.${salt}`;
+    }
+
+    static hashPasswordIfExists(password?: string): string {
+        if (password)
+            return AuthUtils.hashPassword(password);
+        else
+            return "";
+    }
+
+    static verifyPassword(storedPassword: string, suppliedPassword: string): boolean {
+        const [hashedPassword, salt] = storedPassword.split('.');
+        const hashedPasswordBuf = Buffer.from(hashedPassword, 'hex');
+
+        const suppliedPasswordBuf = scryptSync(suppliedPassword, salt, 64);
+
+        return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
+    }
+
+    static testPasswordHashing() {
+        const password = "password";
+        const hashedPassword = AuthUtils.hashPassword(password);
+        return AuthUtils.verifyPassword(hashedPassword, password)
+    }
+}
+
+/**
+ * A class that handles all the database interactions
+ */
 export class Database {
     prisma: PrismaClient
 
     constructor() {
         this.prisma = new PrismaClient();
+    }
+
+    async login(username: string, password: string, ipAddr: string): Promise<string> {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                username: username
+            }
+        });
+
+        const SESSION_LENGTH_DAYS = 1;
+
+        if (user) {
+
+            if (!AuthUtils.verifyPassword(user.password, password))
+                return "";
+
+            if (user.lockExpires && user.isLocked && user.lockExpires > new Date(Date.now())) {
+                return ""
+            } else if (user.lockExpires && user.isLocked && user.lockExpires < new Date(Date.now())) {
+                this.prisma.user.update({
+                    where: {
+                        Id: user.Id
+                    },
+                    data: {
+                        isLocked: false,
+                        lockExpires: null
+                    }
+                });
+            }
+
+            const TOKEN = AuthUtils.generateToken(user.username, user.password);
+
+            const session = await this.prisma.sessions.findFirst({
+                where: {
+                    userId: user.Id
+                }
+            });
+
+            if (session && !AuthUtils.verifyPassword(session.ipAddress, ipAddr)) {
+                console.log(`Session: ${session.token}`)
+                return ""
+            }
+            else if (session && AuthUtils.verifyPassword(session.ipAddress, ipAddr)) {
+                return session.token;
+            }
+
+
+            await this.prisma.sessions.create({
+                data: {
+                    ipAddress: AuthUtils.hashPassword(ipAddr),
+                    userId: user.Id,
+                    token: TOKEN,
+                    expires: new Date(Date.now() + (1000 * SESSION_LENGTH_DAYS) * 60 * 60 * 24)
+                }
+            })
+
+            return AuthUtils.generateToken(user.username, user.password);
+        }
+
+        return "";
     }
 
     /**
@@ -54,6 +161,31 @@ export class Database {
             out = new user(u.Id, u.createdAt, u.email, u.username, u.password, u.role);
             console.log(`Please: ${out.toString()}`)
             return out;
+        });
+    }
+
+    async createUser(u: user): Promise<number> {
+        const AUTH_KEY = (u.role !== Role.STUDENT) ? AuthUtils.generateAuthKey(u.username, u.email, u.password) : "";
+
+        return this.prisma.user.create({
+            data: {
+                username: u.username,
+                email: u.email,
+                password: u.password,
+                role: u.role,
+                authKey: AUTH_KEY
+            }
+        }).then(async () => {
+            const _user = await this.prisma.user.findFirst({
+                where: {
+                    email: u.email
+                }
+            });
+            if (_user)
+                return _user.Id;
+            return -1;
+        }).catch(() => {
+            return -1;
         });
     }
 
@@ -202,10 +334,10 @@ export class Database {
         return new assignment();
     }
 
-    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number): void
-    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[]): void
-    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[], grades: grade[]): void
-    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible?: number, students?: number[], grades?: grade[]): void {
+    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number): Promise<assignment>
+    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[]): Promise<assignment>
+    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[], grades: grade[]): Promise<assignment>
+    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible?: number, students?: number[], grades?: grade[]): Promise<assignment> {
         let s: { Id: number; }[] = []
 
         if (students)
@@ -220,7 +352,7 @@ export class Database {
                 g.push({Id: _grade.Id});
             })
 
-        this.prisma.assignment.create({
+        const out = await this.prisma.assignment.create({
             data: {
                 classId: classId,
                 assigner: assignerId,
@@ -232,7 +364,20 @@ export class Database {
                     connect: g
                 }
             },
+        })
+
+        return new assignment(out.Id, out.createdAt, out.classId, out.assigner, out.totalPointsPossible, await this.getUser(teacherId), await this.getClass(classId));
+    }
+
+    async deleteAssignment(assignmentId: number): Promise<boolean> {
+        const a = await this.prisma.assignment.delete({
+            where: {
+                Id: assignmentId
+            }
         });
+
+        return (a !== undefined);
+
     }
 
     /**

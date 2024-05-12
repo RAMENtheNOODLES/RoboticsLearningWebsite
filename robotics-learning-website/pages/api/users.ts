@@ -39,6 +39,8 @@ export default function handler(
                 res.status(200).json({user: u})
             });
             return;
+        case "delete":
+
         default:
             res.status(500).json({error: "Internal Server Error"});
     }

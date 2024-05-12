@@ -1,3 +1,4 @@
+import {AuthUtils} from "@/app/utils/database";
 
 export class assignment {
     Id: number
@@ -76,7 +77,7 @@ export class user {
     createdAt: Date|null
     email: string
     username: string
-    password: string
+    password: string // Hashed
     role: number
     classes: school_class[] = []
     myClasses: school_class[] = []
@@ -97,7 +98,7 @@ export class user {
             this.createdAt = created_at ? created_at : null
             this.email = email ? email : ""
             this.username = username ? username : ""
-            this.password = password ? password : ""
+            this.password = AuthUtils.hashPasswordIfExists(password)
             this.role = role ? role : 0
             this.classes = classes ? classes : []
             this.myClasses = my_classes ? my_classes : []
