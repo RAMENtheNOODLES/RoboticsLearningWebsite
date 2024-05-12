@@ -42,4 +42,6 @@ export default function handler(
         default:
             res.status(500).json({error: "Internal Server Error"});
     }
+
+    res.status(500).end(`Buh`);
 }

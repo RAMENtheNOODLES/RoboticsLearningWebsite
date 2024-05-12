@@ -36,7 +36,7 @@ export class assignment {
     }
 
     toString() {
-        return JSON.stringify(this, null)
+        return JSON.stringify(this, null, 4)
     }
 }
 
@@ -67,7 +67,7 @@ export class grade {
     }
 
     toString() {
-        return JSON.stringify(this, null)
+        return JSON.stringify(this, null,4)
     }
 }
 
@@ -111,7 +111,7 @@ export class user {
     }
 
     toString() {
-        return JSON.stringify(this, null)
+        return JSON.stringify(this, null,4)
     }
 }
 
@@ -151,6 +151,6 @@ export class school_class {
     }
 
     toString() {
-        return JSON.stringify(this, null)
+        return JSON.stringify(this, null, 4)
     }
 }

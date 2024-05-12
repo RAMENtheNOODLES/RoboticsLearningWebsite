@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 
-import { user, school_class, assignment } from "@/app/utils/structures"
+import {user, school_class, assignment, grade} from "@/app/utils/structures"
+
 
 export enum Role {
     STUDENT,
@@ -30,11 +31,11 @@ export class Database {
             }
         });
         let tmp: user[] = [];
-        users.forEach((u) => {
+        for (const u of users) {
             tmp.push(new user(u.Id, u.createdAt,
                 u.email, u.username, u.password, u.role, this.getStudentsClasses(u.Id),
-                [], this.getStudentsAssignments(u.Id), [], []));
-        });
+                [], await this.getStudentsAssignments(u.Id), [], []));
+        }
         return tmp;//.finally(() => this.prisma.$disconnect());
     }
 
@@ -88,14 +89,23 @@ export class Database {
         return out;
     }
 
-    getAllAssignments() {
-        let out = null;
+    async getAllAssignments() {
+        const assignments = await this.prisma.assignment.findMany({
+            include: {
+                teacher: true,
+                students: true,
+                grades: true,
+            }
+        });
 
-        this.prisma.assignment.findMany().then((assignments) => {
-            out = assignments;
-        }).finally(() => this.prisma.$disconnect());
+        let tmp: assignment[] = []
 
-        return out;
+        for (const a of assignments) {
+            const teacher = await this.getUser(a.teacher.Id);
+            tmp.push(new assignment(a.Id, a.createdAt, a.classId, a.teacher.Id, a.totalPointsPossible, teacher, await this.getClass(a.classId)))
+        }
+
+        return tmp;
     }
 
     getStudentUsername(studentID: number) {
@@ -147,7 +157,7 @@ export class Database {
         return out;
     }
 
-    async getClass(classId: number): Promise<school_class|null> {
+    async getClass(classId: number): Promise<school_class> {
         const c = await this.prisma.classes.findFirst({
             where: {
                 Id: classId
@@ -160,7 +170,7 @@ export class Database {
         });
 
         if (!c)
-            return null;
+            return new school_class();
 
         const teacher = await this.getUser(c.teacherId);
 
@@ -168,9 +178,8 @@ export class Database {
             teacher, c.title, c.description)
     }
 
-    getAssignment(assignmentId: number): assignment|null {
-        let out: assignment|null = null;
-        this.prisma.assignment.findFirst({
+    async getAssignment(assignmentId: number): Promise<assignment> {
+        const a = await this.prisma.assignment.findFirst({
             where: {
                 Id: assignmentId
             },
@@ -180,17 +189,50 @@ export class Database {
                 students: true,
                 teacher: true
             }
-        }).then((a) => {
-            if (a) {
-                this.getUser(a.teacher.Id).then((teacher) => {
-                    if (teacher)
-                        out = new assignment(a.Id, a.createdAt, a.classId, a.assigner, 
-                            a.totalPointsPossible, teacher);
-                });
-            }
         })
 
-        return out;
+        if (a) {
+            const teacher = await this.getUser(a.teacher.Id);
+
+            if (teacher)
+                return new assignment(a.Id, a.createdAt, a.classId, a.assigner,
+                    a.totalPointsPossible, teacher);
+        }
+
+        return new assignment();
+    }
+
+    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number): void
+    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[]): void
+    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[], grades: grade[]): void
+    createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible?: number, students?: number[], grades?: grade[]): void {
+        let s: { Id: number; }[] = []
+
+        if (students)
+            students.forEach((_student) => {
+                s.push({Id: _student});
+            })
+
+        let g: { Id: number; }[] = []
+
+        if (grades)
+            grades.forEach((_grade) => {
+                g.push({Id: _grade.Id});
+            })
+
+        this.prisma.assignment.create({
+            data: {
+                classId: classId,
+                assigner: assignerId,
+                totalPointsPossible: total_points_possible ? total_points_possible : 0,
+                students: {
+                    connect: s
+                },
+                grades: {
+                    connect: g
+                }
+            },
+        });
     }
 
     /**
@@ -198,10 +240,8 @@ export class Database {
      * @param studentID the id of the student
      * @returns a list of the id's of the assignments the student has
      */
-    getStudentsAssignments(studentID: number) {
-        let out: assignment[] = [];
-
-        this.prisma.user.findFirst({
+    async getStudentsAssignments(studentID: number) {
+        const student = await this.prisma.user.findFirst({
             where: {
                 Id: studentID
             },
@@ -215,17 +255,19 @@ export class Database {
                     }
                 }
             }
-        }).then((user) => {
-            if (user) {
-                user.myAssignments.forEach((assignment) => {
-                    let a = this.getAssignment(assignment.Id)
-                    if (a)
-                        out.push(a);
-                })
-            }  
-        }).finally(() => this.prisma.$disconnect());
+        })
 
-        return out;
+        if (!student)
+            return [];
+
+        let tmp: assignment[] = []
+
+        student.myAssignments.forEach((a) => {
+            if (a)
+                this.getAssignment(a.Id).then((as) => { tmp.push(as) })
+        })
+
+        return tmp;
     }
 
     /**
