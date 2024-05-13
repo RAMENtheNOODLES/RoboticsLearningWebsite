@@ -13,11 +13,12 @@ export enum Role {
 
 export class AuthUtils {
 
-    static generateAuthKey(username: string, email: string, password: string): string {
+    static generateAuthKey(username: string, email: string, password: string, header?: string): string {
         const hashedUsername: string = AuthUtils.hashPassword(username);
         const hashedEmail: string = AuthUtils.hashPassword(email);
+        const HEADER = header ? header + "-" : "";
 
-        return AuthUtils.hashPassword(`${hashedUsername}.${hashedEmail}.${password}`);
+        return HEADER + AuthUtils.hashPassword(`${hashedUsername}.${hashedEmail}.${password}`);
     }
 
     static generateToken(username: string, password: string): string {
@@ -77,6 +78,9 @@ export class Database {
             if (!AuthUtils.verifyPassword(user.password, password))
                 return "";
 
+            if (!user.lockExpires && user.isLocked)
+                return ""
+
             if (user.lockExpires && user.isLocked && user.lockExpires > new Date(Date.now())) {
                 return ""
             } else if (user.lockExpires && user.isLocked && user.lockExpires < new Date(Date.now())) {
@@ -117,10 +121,44 @@ export class Database {
                 }
             })
 
+            await this.prisma.user.update({
+                where: {
+                    Id: user.Id
+                },
+                data: {
+                    lastLogin: new Date(Date.now())
+                }
+            });
+
             return AuthUtils.generateToken(user.username, user.password);
         }
 
         return "";
+    }
+
+    async deleteUser(userId: number, executorId: number, authToken: string) {
+        if (userId == executorId)
+            return false;
+
+        const EXECUTOR = await this.prisma.user.findFirst({
+            where: {
+                Id: executorId,
+                authKey: authToken
+            }
+        });
+
+        if (EXECUTOR === undefined)
+            return false
+
+        const USER = await this.prisma.user.delete({
+            where: {
+                Id: userId
+            }
+        })
+
+        return USER !== undefined;
+
+
     }
 
     /**

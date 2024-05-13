@@ -309,6 +309,7 @@ paths:
               type: object
               properties:
                 auth-key: "string"
+                executorId: "int"
       responses:
         "200":
           description: "User deleted successfully"

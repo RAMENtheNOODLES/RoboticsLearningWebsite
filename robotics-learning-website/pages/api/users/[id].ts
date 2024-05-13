@@ -21,17 +21,30 @@ export default function handler(
         return;
     }
 
+    if (req.method == "GET") {
+        db.getUser(Number(id)).then((u) => {
 
-    db.getUser(Number(id)).then((u) => {
+            console.log(`Out: ${u.toString()}`)
 
-        console.log(`Out: ${u.toString()}`)
+            if (u.toString() === new user().toString()) {
+                res.status(404).end(`No user with id: ${id}`);
+                return;
+            }
 
-        if (u.toString() === new user().toString()) {
-            res.status(404).end(`No user with id: ${id}`);
+            res.status(200).json({user: u})
+        });
+        return;
+    }
+    else if (req.method == "DELETE") {
+        db.deleteUser(Number(id), Number(req.body["executorId"]), req.body["auth-key"]).then((success) => {
+            if (success) {
+                res.status(200).end(`Success!`)
+                return;
+            }
+            res.status(500).end(`Could not delete user...`);
             return;
-        }
+        })
 
-        res.status(200).json({user: u})
-    });
-    return;
+        return;
+    }
 }
