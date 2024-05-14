@@ -15,11 +15,11 @@ export default function LoginPage() {
         const response = await fetch('/api/users/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify({ username: username, password: password }),
         })
 
         if (response.ok) {
-            await router.push('/profile')
+            await router.push('/dashboard', '/login')
         } else {
             // Handle errors
         }
@@ -34,7 +34,6 @@ export default function LoginPage() {
                     <button type="submit">Login</button>
                 </form>
             </div>
-
         </main>
 
     )

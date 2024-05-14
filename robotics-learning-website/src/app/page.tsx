@@ -1,7 +1,7 @@
 'use client'
+import { useCookies } from "react-cookie";
 import {school_class, user} from "./utils/structures";
-
-//const db = new Database();
+import { useEffect } from "react";
 
 function GetUserBtn() {
   function handleClick() {
@@ -54,6 +54,7 @@ function GetAllClassesBtn() {
 }
 
 export default function Home() {
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">

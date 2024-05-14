@@ -136,6 +136,31 @@ export class Database {
         return "";
     }
 
+    async getSession(sessionToken: string, ip: string)  {
+        const SESSION = await this.prisma.sessions.findFirst({
+            where: {
+                token: sessionToken
+            }
+        });
+
+        if (!SESSION)
+            return null;
+
+        if (!AuthUtils.verifyPassword(SESSION.ipAddress, ip))
+            return null;
+
+        const USER = await this.prisma.user.findFirst({
+            where: {
+                Id: SESSION.userId
+            }
+        });
+
+        if (!USER)
+            return null;
+
+        return new user(USER.Id, USER.createdAt, USER.email, USER.username, "", USER.role);
+    }
+
     async deleteUser(userId: number, executorId: number, authToken: string) {
         if (userId == executorId)
             return false;

@@ -1,4 +1,4 @@
-import { Database } from "@/app/utils/database";
+import {AuthUtils, Database} from "@/app/utils/database";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type ResponseData = {
@@ -27,8 +27,10 @@ export default function handler(
     const { username, password } = req.body;
 
     db.login(username, password, ip).then((t) => {
-        if (t !== "")
+        if (t !== "") {
+            res.setHeader('Set-Cookie', [`token=${t}}`, `a=${AuthUtils.hashPassword(ip)}`]);
             res.status(200).json({token: t})
+        }
         else
             res.status(500).end(`Error logging in`);
     });
