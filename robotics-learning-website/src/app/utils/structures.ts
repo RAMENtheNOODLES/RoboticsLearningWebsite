@@ -79,6 +79,7 @@ export class user {
     username: string
     password: string // Hashed
     role: number
+    authkey: string = ""
     classes: school_class[] = []
     myClasses: school_class[] = []
     assignments: assignment[] = []

@@ -6,7 +6,8 @@
     "dev": "next build && next dev",
     "build": "next build",
     "start": "next build && next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma": "prisma generate && prisma migrate dev --name=init"
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
