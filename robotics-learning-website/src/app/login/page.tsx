@@ -1,5 +1,5 @@
-import '../src/app/globals.css'
-import { SignIn } from '@/app/sign-in'
+import "@/app/globals.css"
+import { SignIn } from '@/components/sign-in'
 
 export default function LoginPage() {
 
@@ -7,6 +7,5 @@ export default function LoginPage() {
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
             <SignIn></SignIn>
         </main>
-
     )
 }

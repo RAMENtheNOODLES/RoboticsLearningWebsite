@@ -10,9 +10,10 @@
     "prisma": "prisma generate && prisma migrate dev --name=init"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.1.0",
     "@prisma/client": "^5.13.0",
     "next": "14.2.3",
-    "next-auth": "^4.24.7",
+    "next-auth": "^5.0.0-beta.18",
     "react": "^18",
     "react-dom": "^18"
   },

@@ -1,6 +1,8 @@
 'use client'
 import { signIn, useSession } from "next-auth/react";
 import {school_class, user} from "./utils/structures";
+import { auth } from "@/auth";
+import { LoginBtn } from "@/components/login-btn";
 
 //const db = new Database();
 
@@ -54,7 +56,9 @@ function GetAllClassesBtn() {
   )
 }
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
@@ -62,6 +66,11 @@ export default function Home() {
         <p>User 1:</p>
         <GetUserBtn />
         <GetAllClassesBtn/>
+        <LoginBtn/>
+
+        <pre>
+          {JSON.stringify(session, null, 4)}
+        </pre>
       </div>
     </main>
   )
