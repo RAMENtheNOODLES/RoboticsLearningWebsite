@@ -1,4 +1,5 @@
 'use client'
+import { signIn, useSession } from "next-auth/react";
 import {school_class, user} from "./utils/structures";
 
 //const db = new Database();
@@ -63,5 +64,5 @@ export default function Home() {
         <GetAllClassesBtn/>
       </div>
     </main>
-  );
+  )
 }

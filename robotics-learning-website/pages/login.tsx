@@ -1,6 +1,7 @@
 import { FormEvent } from 'react'
 import { useRouter } from 'next/router'
 import '../src/app/globals.css'
+import { SignIn } from '@/app/sign-in'
 
 export default function LoginPage() {
     const router = useRouter()
@@ -27,6 +28,7 @@ export default function LoginPage() {
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
+            <SignIn></SignIn>
             <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
                 <form onSubmit={handleSubmit}>
                     <input type="text" name="username" placeholder="Username" required/>
@@ -34,7 +36,6 @@ export default function LoginPage() {
                     <button type="submit">Login</button>
                 </form>
             </div>
-
         </main>
 
     )
