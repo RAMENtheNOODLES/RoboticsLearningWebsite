@@ -15,43 +15,70 @@ datasource db {
 }
 
 model User {
-  Id            Int            @id @default(autoincrement())
+  id            String         @id @default(cuid())
   createdAt     DateTime       @default(now())
-  email         String         @unique
-  username      String         @unique @default(uuid())
-  password      String
+  updatedAt     DateTime       @updatedAt
+  email         String?        @unique
+  emailVerified DateTime?
+  name          String?        @map("username")
+  image         String?
+  password      String?
   role          Int            @default(0)
-  authKey       String         @default("")
   lastLogin     DateTime?
   isLocked      Boolean        @default(false)
   lockExpires   DateTime?
+  accounts      Account[]
+  sessions      Session[]
+
+  Authenticator Authenticator[]
+
   classes       Classes[]      @relation(name: "class")
   myClasses     Classes[]      @relation(name: "teacher")
   assignments   Assignment[]   @relation(name: "assignment")
   myAssignments Assignment[]   @relation(name: "createdAssignment")
   myGrades      Grade[]        @relation(name: "student_assigned")
-  session       Sessions[]     @relation(name: "session")
-  loginHistory  LoginHistory[] @relation(name: "login_history")
 }
 
 model Classes {
   Id          Int          @id @default(autoincrement())
   createdAt   DateTime     @default(now())
-  teacherId   Int
-  teacher     User         @relation(name: "teacher", fields: [teacherId], references: [Id], onDelete: NoAction)
+  teacherId   String
+  teacher     User         @relation(name: "teacher", fields: [teacherId], references: [id], onDelete: NoAction)
   title       String       @unique
   description String
   users       User[]       @relation(name: "class")
   assignments Assignment[] @relation(name: "assignments")
 }
 
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@unique([provider, providerAccountId])
+}
+
 model Assignment {
   Id                  Int      @id @default(autoincrement())
   createdAt           DateTime @default(now())
   classId             Int
-  assigner            Int
+  assigner            String
   totalPointsPossible Int      @default(0)
-  teacher             User     @relation(name: "createdAssignment", fields: [assigner], references: [Id], onUpdate: NoAction)
+  teacher             User     @relation(name: "createdAssignment", fields: [assigner], references: [id], onUpdate: NoAction)
   students            User[]   @relation(name: "assignment")
   grades              Grade[]  @relation(name: "grade")
   class               Classes  @relation(name: "assignments", fields: [classId], references: [Id])
@@ -62,27 +89,41 @@ model Grade {
   assignmentId Int
   pointsEarned Int        @default(0)
   totalPoints  Int        @default(0)
-  studentId    Int
-  student      User       @relation(name: "student_assigned", fields: [studentId], references: [Id])
+  studentId    String
+  student      User       @relation(name: "student_assigned", fields: [studentId], references: [id])
   assignment   Assignment @relation(name: "grade", fields: [assignmentId], references: [Id])
 }
 
-model Sessions {
-  Id        Int      @id @default(autoincrement())
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
   createdAt DateTime @default(now())
-  ipAddress String
-  userId    Int
-  user      User     @relation(name: "session", fields: [userId], references: [Id])
-  token     String   @unique
-  expires   DateTime
+  updatedAt DateTime @updatedAt
 }
 
-model LoginHistory {
-  Id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  userId    Int
-  user      User     @relation(name: "login_history", fields: [userId], references: [Id])
-  ipAddress String
-  numTries  Int
-  success   Boolean
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@unique([identifier, token])
+}
+
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([userId, credentialID])
 }

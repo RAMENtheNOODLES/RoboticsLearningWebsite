@@ -61,13 +61,16 @@ export class Database {
     prisma: PrismaClient
 
     constructor() {
-        this.prisma = new PrismaClient();
+        globalThis.prisma ??= new PrismaClient();
+        this.prisma = globalThis.prisma;
     }
 
     async login(username: string, password: string, ipAddr: string): Promise<string> {
+        return ""
+        /*
         const user = await this.prisma.user.findFirst({
             where: {
-                username: username
+                name: username
             }
         });
 
@@ -95,11 +98,11 @@ export class Database {
                 });
             }
 
-            const TOKEN = AuthUtils.generateToken(user.username, user.password);
+            const TOKEN = AuthUtils.generateToken(user.name, user.password);
 
             const session = await this.prisma.sessions.findFirst({
                 where: {
-                    userId: user.Id
+                    userId: user.id
                 }
             });
 
@@ -115,7 +118,7 @@ export class Database {
             await this.prisma.sessions.create({
                 data: {
                     ipAddress: AuthUtils.hashPassword(ipAddr),
-                    userId: user.Id,
+                    userId: user.id,
                     token: TOKEN,
                     expires: new Date(Date.now() + (1000 * SESSION_LENGTH_DAYS) * 60 * 60 * 24)
                 }
@@ -123,7 +126,7 @@ export class Database {
 
             await this.prisma.user.update({
                 where: {
-                    Id: user.Id
+                    id: user.id
                 },
                 data: {
                     lastLogin: new Date(Date.now())
@@ -134,41 +137,16 @@ export class Database {
         }
 
         return "";
+        */
     }
 
-    async getSession(sessionToken: string, ip: string)  {
-        const SESSION = await this.prisma.sessions.findFirst({
-            where: {
-                token: sessionToken
-            }
-        });
-
-        if (!SESSION)
-            return null;
-
-        if (!AuthUtils.verifyPassword(SESSION.ipAddress, ip))
-            return null;
-
-        const USER = await this.prisma.user.findFirst({
-            where: {
-                Id: SESSION.userId
-            }
-        });
-
-        if (!USER)
-            return null;
-
-        return new user(USER.Id, USER.createdAt, USER.email, USER.username, "", USER.role);
-    }
-
-    async deleteUser(userId: number, executorId: number, authToken: string) {
+    async deleteUser(userId: string, executorId: string, authToken: string) {
         if (userId == executorId)
             return false;
 
         const EXECUTOR = await this.prisma.user.findFirst({
             where: {
-                Id: executorId,
-                authKey: authToken
+                id: executorId
             }
         });
 
@@ -177,7 +155,7 @@ export class Database {
 
         const USER = await this.prisma.user.delete({
             where: {
-                Id: userId
+                id: userId
             }
         })
 
@@ -202,41 +180,38 @@ export class Database {
         });
         let tmp: user[] = [];
         for (const u of users) {
-            tmp.push(new user(u.Id, u.createdAt,
-                u.email, u.username, u.password, u.role, this.getStudentsClasses(u.Id),
-                [], await this.getStudentsAssignments(u.Id), [], []));
+            tmp.push(new user(u.id, u.createdAt,
+                u.email ?? "", u.name ?? "", u.password ?? "", u.role, this.getStudentsClasses(u.id),
+                [], await this.getStudentsAssignments(u.id), [], []));
         }
         return tmp;//.finally(() => this.prisma.$disconnect());
     }
 
-    async getUser(userId: number): Promise<user> {
+    async getUser(userId: string): Promise<user> {
         let out = new user()
 
         return this.prisma.user.findFirst({
             where: {
-                Id: userId
+                id: userId
             }
         }).then((u) => {
             console.log(`User: ${u}`)
             if (!u)
                 return new user()
 
-            out = new user(u.Id, u.createdAt, u.email, u.username, u.password, u.role);
+            out = new user(u.id, u.createdAt, u.email ?? "", u.name ?? "", u.password ?? "", u.role);
             console.log(`Please: ${out.toString()}`)
             return out;
         });
     }
 
-    async createUser(u: user): Promise<number> {
-        const AUTH_KEY = (u.role !== Role.STUDENT) ? AuthUtils.generateAuthKey(u.username, u.email, u.password) : "";
-
+    async createUser(u: user): Promise<string> {
         return this.prisma.user.create({
             data: {
-                username: u.username,
+                name: u.username,
                 email: u.email,
                 password: u.password,
-                role: u.role,
-                authKey: AUTH_KEY
+                role: u.role
             }
         }).then(async () => {
             const _user = await this.prisma.user.findFirst({
@@ -245,10 +220,10 @@ export class Database {
                 }
             });
             if (_user)
-                return _user.Id;
-            return -1;
+                return _user.id;
+            return "";
         }).catch(() => {
-            return -1;
+            return "";
         });
     }
 
@@ -263,7 +238,7 @@ export class Database {
 
         for (const c of classes) {
             const teacher = await this.getUser(c.teacherId);
-            tmp.push(new school_class(c.Id, c.createdAt, c.teacherId, teacher, c.title, c.description))
+            tmp.push(new school_class(String(c.Id), c.createdAt, c.teacherId, teacher, c.title, c.description))
         }
 
         return tmp;
@@ -296,34 +271,34 @@ export class Database {
         let tmp: assignment[] = []
 
         for (const a of assignments) {
-            const teacher = await this.getUser(a.teacher.Id);
-            tmp.push(new assignment(a.Id, a.createdAt, a.classId, a.teacher.Id, a.totalPointsPossible, teacher, await this.getClass(a.classId)))
+            const teacher = await this.getUser(a.teacher.id);
+            tmp.push(new assignment(a.Id, a.createdAt, a.classId, a.teacher.id, a.totalPointsPossible, teacher, await this.getClass(a.classId)))
         }
 
         return tmp;
     }
 
-    getStudentUsername(studentID: number) {
+    getStudentUsername(studentID: string) {
         let out = "";
 
         this.prisma.user.findFirst({
             where: {
-                Id: studentID,
+                id: studentID,
                 role: Role.STUDENT
             }
         }).then((student) => {
             if (student)
-                out = student.username;
+                out = student.name ?? "";
         }).finally(() => this.prisma.$disconnect());
 
         return out;
     }
 
-    getStudentsClasses(studentId: number): school_class[] {
+    getStudentsClasses(studentId: string): school_class[] {
         let out: school_class[] = []
         this.prisma.user.findFirst({
             where: {
-                Id: studentId
+                id: studentId
             },
             include: {
                 myClasses: {
@@ -339,9 +314,9 @@ export class Database {
                 return [];
 
             student.myClasses.forEach((c) => {
-                this.getUser(c.teacher.Id).then((teacher) => {
+                this.getUser(c.teacher.id).then((teacher) => {
                     if (teacher) {
-                        out.push(new school_class(c.Id, c.createdAt, c.teacherId, teacher,
+                        out.push(new school_class(String(c.Id), c.createdAt, c.teacherId, teacher,
                             c.title, c.description))
                     }   
                 })
@@ -369,7 +344,7 @@ export class Database {
 
         const teacher = await this.getUser(c.teacherId);
 
-        return new school_class(c.Id, c.createdAt, c.teacherId,
+        return new school_class(String(c.Id), c.createdAt, c.teacherId,
             teacher, c.title, c.description)
     }
 
@@ -387,7 +362,7 @@ export class Database {
         })
 
         if (a) {
-            const teacher = await this.getUser(a.teacher.Id);
+            const teacher = await this.getUser(a.teacher.id);
 
             if (teacher)
                 return new assignment(a.Id, a.createdAt, a.classId, a.assigner,
@@ -397,11 +372,11 @@ export class Database {
         return new assignment();
     }
 
-    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number): Promise<assignment>
-    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[]): Promise<assignment>
-    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible: number, students: number[], grades: grade[]): Promise<assignment>
-    async createAssignment(classId: number, assignerId: number, teacherId: number, c: school_class, total_points_possible?: number, students?: number[], grades?: grade[]): Promise<assignment> {
-        let s: { Id: number; }[] = []
+    async createAssignment(classId: number, assignerId: string, teacherId: string, c: school_class, total_points_possible: number): Promise<assignment>
+    async createAssignment(classId: number, assignerId: string, teacherId: string, c: school_class, total_points_possible: number, students: string[]): Promise<assignment>
+    async createAssignment(classId: number, assignerId: string, teacherId: string, c: school_class, total_points_possible: number, students: string[], grades: grade[]): Promise<assignment>
+    async createAssignment(classId: number, assignerId: string, teacherId: string, c: school_class, total_points_possible?: number, students?: string[], grades?: grade[]): Promise<assignment> {
+        let s: { Id: string; }[] = []
 
         if (students)
             students.forEach((_student) => {
@@ -421,7 +396,7 @@ export class Database {
                 assigner: assignerId,
                 totalPointsPossible: total_points_possible ? total_points_possible : 0,
                 students: {
-                    connect: s
+                    
                 },
                 grades: {
                     connect: g
@@ -448,10 +423,10 @@ export class Database {
      * @param studentID the id of the student
      * @returns a list of the id's of the assignments the student has
      */
-    async getStudentsAssignments(studentID: number) {
+    async getStudentsAssignments(studentID: string) {
         const student = await this.prisma.user.findFirst({
             where: {
-                Id: studentID
+                id: studentID
             },
             include: {
                 myAssignments: {
@@ -484,7 +459,7 @@ export class Database {
      * @returns A list of student id's that are assigned
      */
     getStudentsAssignedToAssignment(assignmentID: number) {
-        let out: number[] = [];
+        let out: string[] = [];
         this.prisma.assignment.findFirstOrThrow({
             where: {
                 Id: assignmentID
@@ -495,7 +470,7 @@ export class Database {
         }).then((assignment) => {
             assignment.students.forEach((student) => {
                 if (student.role == Role.STUDENT)
-                    out.push(student.Id);
+                    out.push(student.id);
             });
         }).catch(() => {
             this.prisma.$disconnect();
@@ -505,12 +480,12 @@ export class Database {
         return out;
     }
 
-    async addNewUser(u: user): Promise<number> {
-        if (u.Id != -1)
+    async addNewUser(u: user): Promise<string> {
+        if (u.Id != "")
             return this.prisma.user.create({
                 data: {
-                    Id: u.Id,
-                    username: u.username,
+                    id: u.Id,
+                    name: u.username,
                     email: u.email,
                     password: u.password,
                     role: u.role
@@ -521,7 +496,7 @@ export class Database {
 
         return this.prisma.user.create({
             data: {
-                username: u.username,
+                name: u.username,
                 email: u.email,
                 password: u.password,
                 role: u.role
@@ -533,8 +508,8 @@ export class Database {
                 }
             });
             if (_user)
-                return _user.Id;
-            return -1;
+                return _user.id;
+            return "";
         });
     }
 }

@@ -4,7 +4,7 @@ export class assignment {
     Id: number
     createdAt: Date|null
     classId: number
-    assigner: number
+    assigner: string
     totalPointsPossible: number
     teacher: user
     students: user[]
@@ -12,15 +12,15 @@ export class assignment {
     class: school_class
     
     constructor()
-    constructor(id?: number, created_at?: Date, classId?: number, assigner?: number, 
+    constructor(id?: number, created_at?: Date, classId?: number, assigner?: string, 
         total_points_possible?: number, teacher?: user, School_Class?: school_class)
-    constructor(id?: number, created_at?: Date, classId?: number, assigner?: number, 
+    constructor(id?: number, created_at?: Date, classId?: number, assigner?: string, 
         total_points_possible?: number, teacher?: user, School_Class?: school_class, 
         students?: user[], grades?: grade[]) {
             this.Id = id ? id : -1;
             this.createdAt = created_at ? created_at : null;
             this.classId = classId ? classId : -1;
-            this.assigner = assigner ? assigner : -1;
+            this.assigner = assigner ?? "";
             this.totalPointsPossible = total_points_possible ? total_points_possible : 0;
             if (!teacher)
                 throw new Error("Teacher must not be null")
@@ -73,7 +73,7 @@ export class grade {
 }
 
 export class user {
-    Id: number
+    Id: string
     createdAt: Date|null
     email: string
     username: string
@@ -87,15 +87,15 @@ export class user {
     myGrades: grade[] = []
 
     constructor()
-    constructor(id?: number, created_at?: Date, email?: string, username?: string, password?: string, role?: number)
-    constructor(id: number, created_at: Date, email: string, username: string, password: string, role: number)
-    constructor(id: number, created_at: Date, email: string, username: string, password: string, role: number, 
+    constructor(id?: string, created_at?: Date, email?: string, username?: string, password?: string, role?: number)
+    constructor(id: string, created_at: Date, email: string, username: string, password: string, role: number)
+    constructor(id: string, created_at: Date, email: string, username: string, password: string, role: number, 
         classes: school_class[], my_classes: school_class[], 
         assignments: assignment[], my_assignments: assignment[], my_grades: grade[])
-    constructor(id?: number, created_at?: Date, email?: string, username?: string, password?: string, role?: number, 
+    constructor(id?: string, created_at?: Date, email?: string, username?: string, password?: string, role?: number, 
         classes?: school_class[], my_classes?: school_class[], 
         assignments?: assignment[], my_assignments?: assignment[], my_grades?: grade[]) {
-            this.Id = id ? id : -1;
+            this.Id = id ? id : "";
             this.createdAt = created_at ? created_at : null
             this.email = email ? email : ""
             this.username = username ? username : ""
@@ -118,9 +118,9 @@ export class user {
 }
 
 export class school_class {
-    Id: number
+    Id: string
     createdAt: Date|null
-    teacherId: number
+    teacherId: string
     teacher: user|null
     title: string
     description: string
@@ -128,19 +128,19 @@ export class school_class {
     assignments: assignment[]
 
     constructor()
-    constructor(id?: number, created_at?: Date, teacherId?: number, teacher?: user, title?: string)
-    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string)
-    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description?: string)
-    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description: string)
-    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description: string,
+    constructor(id?: string, created_at?: Date, teacherId?: string, teacher?: user, title?: string)
+    constructor(id: string, created_at: Date, teacherId: string, teacher: user, title: string)
+    constructor(id: string, created_at: Date, teacherId: string, teacher: user, title: string, description?: string)
+    constructor(id: string, created_at: Date, teacherId: string, teacher: user, title: string, description: string)
+    constructor(id: string, created_at: Date, teacherId: string, teacher: user, title: string, description: string,
         users?: user[], assignments?: assignment[])
-    constructor(id: number, created_at: Date, teacherId: number, teacher: user, title: string, description: string,
+    constructor(id: string, created_at: Date, teacherId: string, teacher: user, title: string, description: string,
                 users: user[], assignments: assignment[])
-    constructor(id?: number, created_at?: Date, teacherId?: number, teacher?: user, title?: string, description?: string,
+    constructor(id?: string, created_at?: Date, teacherId?: string, teacher?: user, title?: string, description?: string,
                 users?: user[], assignments?: assignment[]) {
-            this.Id = id ? id : -1;
+            this.Id = id ?? "";
             this.createdAt = created_at ? created_at : null;
-            this.teacherId = teacherId ? teacherId : -1;
+            this.teacherId = teacherId ?? ""
             this.teacher = teacher ? teacher : null;
             this.title = title ? title : "";
             this.description = description ? description : ""

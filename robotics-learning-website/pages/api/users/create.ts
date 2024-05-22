@@ -3,7 +3,7 @@ import { user } from "@/app/utils/structures";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type ResponseData = {
-    userId?: number,
+    userId?: string,
     error?: string
 }
 
@@ -23,7 +23,7 @@ export default function handler(
     const USER = new user(undefined, undefined, email, username, password, role);
 
     db.createUser(USER).then((u) => {
-        if (u !== -1)
+        if (u !== "")
             res.status(200).json({userId: u})
         else
             res.status(500).end(`Error creating user`);

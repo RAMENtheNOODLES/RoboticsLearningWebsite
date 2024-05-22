@@ -22,7 +22,7 @@ export default function handler(
     }
 
     if (req.method == "GET") {
-        db.getUser(Number(id)).then((u) => {
+        db.getUser(String(id)).then((u) => {
 
             console.log(`Out: ${u.toString()}`)
 
@@ -36,7 +36,7 @@ export default function handler(
         return;
     }
     else if (req.method == "DELETE") {
-        db.deleteUser(Number(id), Number(req.body["executorId"]), req.body["auth-key"]).then((success) => {
+        db.deleteUser(String(id), String(req.body["executorId"]), req.body["auth-key"]).then((success) => {
             if (success) {
                 res.status(200).end(`Success!`)
                 return;

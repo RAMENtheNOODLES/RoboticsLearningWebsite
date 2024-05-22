@@ -21,17 +21,5 @@ export default function handler(
         res.status(404).end(`Id:`);
         return;
     }
-
-    db.getSession(token, ip).then((u) => {
-        if (!u) {
-            console.error("No id");
-            res.status(404).end(`No session with id: `);
-            return;
-        }
-
-        console.log(`Out: ${u.toString()}`)
-
-        res.status(200).json({user: u})
-    });
     return;
 }

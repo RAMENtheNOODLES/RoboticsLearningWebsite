@@ -1,5 +1,5 @@
 import "@/app/globals.css"
-import { SignIn } from '@/components/sign-in'
+import { SignIn } from '@/components/sign-in-github'
 
 export default function LoginPage() {
 
