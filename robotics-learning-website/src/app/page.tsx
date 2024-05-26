@@ -1,8 +1,9 @@
 import {school_class, user} from "./utils/structures";
 import { auth } from "@/auth";
 import { LoginBtn } from "@/components/login-btn";
-import { SignIn } from "@/components/sign-in";
+import { SignOut } from "@/app/components/sign-out-btn";
 import { UserAvatar } from "@/components/user-avatar";
+import { EditorBox } from "@/components/editor";
 
 //const db = new Database();
 
@@ -59,15 +60,17 @@ function GetAllClassesBtn() {
 export default async function Home() {
   const session = await auth();
 
+  const debug = JSON.stringify(session, null, 4)
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <h1>Hello world</h1>
-        <p>User 1:</p>
-        <LoginBtn/>
+        <UserAvatar session={session} />
+        <SignOut></SignOut>
+        <p>{debug}</p>
+        <br></br>
 
-        <UserAvatar />
-        <SignIn/>
+        <EditorBox />
       </div>
     </main>
   )

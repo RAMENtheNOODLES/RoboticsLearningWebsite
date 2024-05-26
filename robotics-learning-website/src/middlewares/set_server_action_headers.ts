@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function setHeaders(req: NextRequest) {
+    console.log(`Setting headers for url: ${req.url}`)
     const RequestHeaders = new Headers(req.headers);
     RequestHeaders.set("x-forwarded-host", "localhost:3000");
     RequestHeaders.set("origin", "http://localhost:3000");

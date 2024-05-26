@@ -1,12 +1,19 @@
-import { auth } from "@/auth";
 import authConfig from "@/auth.config";
 import { setHeaders } from "@/middlewares/set_server_action_headers";
 import NextAuth from "next-auth";
-//import { setHeaders } from "@/middlewares/set_server_action_headers";
-import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "experimental-edge"
 
 export default NextAuth(authConfig).auth((req) => {
     if (req.nextUrl.pathname.startsWith("/login")) {
+        return setHeaders(req);
+    }
+
+    if (req.nextUrl.pathname.startsWith("/auth")) {
+        return setHeaders(req)
+    }
+
+    if (req.nextUrl.pathname.startsWith("/")) {
         return setHeaders(req);
     }
 })

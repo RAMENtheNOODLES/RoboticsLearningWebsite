@@ -6,9 +6,9 @@ import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
 
 export enum Role {
-    STUDENT,
-    TEACHER,
-    ADMIN
+    STUDENT = "student",
+    TEACHER = "teacher",
+    ADMIN = "admin"
 }
 
 export class AuthUtils {
@@ -181,7 +181,7 @@ export class Database {
         let tmp: user[] = [];
         for (const u of users) {
             tmp.push(new user(u.id, u.createdAt,
-                u.email ?? "", u.name ?? "", u.password ?? "", u.role, this.getStudentsClasses(u.id),
+                u.email ?? "", u.name ?? "", u.password ?? "", u.role ?? "student", this.getStudentsClasses(u.id),
                 [], await this.getStudentsAssignments(u.id), [], []));
         }
         return tmp;//.finally(() => this.prisma.$disconnect());
@@ -199,7 +199,7 @@ export class Database {
             if (!u)
                 return new user()
 
-            out = new user(u.id, u.createdAt, u.email ?? "", u.name ?? "", u.password ?? "", u.role);
+            out = new user(u.id, u.createdAt, u.email ?? "", u.name ?? "", u.password ?? "", u.role ?? "student");
             console.log(`Please: ${out.toString()}`)
             return out;
         });
@@ -310,7 +310,7 @@ export class Database {
                 }
             }
         }).then((student) => {
-            if (!student || student.role != 0)
+            if (!student || student.role !== "student")
                 return [];
 
             student.myClasses.forEach((c) => {

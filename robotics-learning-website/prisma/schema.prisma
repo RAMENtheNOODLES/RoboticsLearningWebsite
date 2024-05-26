@@ -10,33 +10,34 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
-  id            String         @id @default(cuid())
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  email         String?        @unique
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  email         String?   @unique
   emailVerified DateTime?
-  name          String?        @map("username")
+  name          String?   @map("username")
   image         String?
   password      String?
-  role          Int            @default(0)
+  role          String?
   lastLogin     DateTime?
-  isLocked      Boolean        @default(false)
+  isLocked      Boolean   @default(false)
   lockExpires   DateTime?
   accounts      Account[]
   sessions      Session[]
 
   Authenticator Authenticator[]
 
-  classes       Classes[]      @relation(name: "class")
-  myClasses     Classes[]      @relation(name: "teacher")
-  assignments   Assignment[]   @relation(name: "assignment")
-  myAssignments Assignment[]   @relation(name: "createdAssignment")
-  myGrades      Grade[]        @relation(name: "student_assigned")
+  classes       Classes[]    @relation(name: "class")
+  myClasses     Classes[]    @relation(name: "teacher")
+  assignments   Assignment[] @relation(name: "assignment")
+  myAssignments Assignment[] @relation(name: "createdAssignment")
+  myGrades      Grade[]      @relation(name: "student_assigned")
 }
 
 model Classes {
@@ -63,12 +64,12 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@unique([provider, providerAccountId])
 }
 
@@ -100,7 +101,7 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -109,7 +110,7 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@unique([identifier, token])
 }
 
@@ -122,8 +123,8 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([userId, credentialID])
 }

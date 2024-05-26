@@ -78,7 +78,7 @@ export class user {
     email: string
     username: string
     password: string // Hashed
-    role: number
+    role: string
     authkey: string = ""
     classes: school_class[] = []
     myClasses: school_class[] = []
@@ -87,12 +87,12 @@ export class user {
     myGrades: grade[] = []
 
     constructor()
-    constructor(id?: string, created_at?: Date, email?: string, username?: string, password?: string, role?: number)
-    constructor(id: string, created_at: Date, email: string, username: string, password: string, role: number)
-    constructor(id: string, created_at: Date, email: string, username: string, password: string, role: number, 
+    constructor(id?: string, created_at?: Date, email?: string, username?: string, password?: string, role?: string)
+    constructor(id: string, created_at: Date, email: string, username: string, password: string, role: string)
+    constructor(id: string, created_at: Date, email: string, username: string, password: string, role: string, 
         classes: school_class[], my_classes: school_class[], 
         assignments: assignment[], my_assignments: assignment[], my_grades: grade[])
-    constructor(id?: string, created_at?: Date, email?: string, username?: string, password?: string, role?: number, 
+    constructor(id?: string, created_at?: Date, email?: string, username?: string, password?: string, role?: string, 
         classes?: school_class[], my_classes?: school_class[], 
         assignments?: assignment[], my_assignments?: assignment[], my_grades?: grade[]) {
             this.Id = id ? id : "";
@@ -100,7 +100,7 @@ export class user {
             this.email = email ? email : ""
             this.username = username ? username : ""
             this.password = AuthUtils.hashPasswordIfExists(password)
-            this.role = role ? role : 0
+            this.role = role ?? "student"
             this.classes = classes ? classes : []
             this.myClasses = my_classes ? my_classes : []
             this.assignments = assignments ? assignments : []

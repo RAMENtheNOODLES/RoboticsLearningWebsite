@@ -1,12 +1,9 @@
-import authConfig from "@/auth.config"
-import NextAuth from "next-auth"
-import { SignIn } from "@/components/sign-in"
+import { Session } from "next-auth"
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar"
+import { LoginBtn } from "./login-btn"
 
-export async function UserAvatar() {
-    const session = await NextAuth(authConfig).auth()
-
-    if (!session?.user) return <SignIn></SignIn>
+export async function UserAvatar({ session }: { session: Session|null} ) {
+    if (!session || !session.user) return <LoginBtn></LoginBtn>
 
     return (
         <Avatar>
