@@ -1,4 +1,4 @@
-import {AuthUtils, Database} from "@/app/utils/database";
+import {AuthUtils, Database} from "@/lib/database";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type ResponseData = {

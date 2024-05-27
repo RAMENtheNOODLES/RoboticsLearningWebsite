@@ -1,9 +1,11 @@
-import AceEditor from "react-ace"
-
-import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/theme-github";
-import "ace-builds/src-noconflict/ext-language_tools";
+'use client'
+import Editor from '@monaco-editor/react'
 
 export function EditorBox() {
-    return <AceEditor/>
+    return (
+        <div>
+            <Editor height="100vh" defaultLanguage='java' defaultValue="// some comment"/>
+        </div>
+        
+    )
 }

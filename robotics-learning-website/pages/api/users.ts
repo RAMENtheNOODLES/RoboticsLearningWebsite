@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { Database } from "@/app/utils/database";
-import { user } from "@/app/utils/structures";
+import { Database } from "@/lib/database";
+import { user } from "@/lib/structures";
 
 type ResponseData = {
     user?: user,

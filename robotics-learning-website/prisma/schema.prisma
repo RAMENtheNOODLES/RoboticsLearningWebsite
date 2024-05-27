@@ -38,6 +38,7 @@ model User {
   assignments   Assignment[] @relation(name: "assignment")
   myAssignments Assignment[] @relation(name: "createdAssignment")
   myGrades      Grade[]      @relation(name: "student_assigned")
+  UserFiles     UserFiles[]
 }
 
 model Classes {
@@ -127,4 +128,22 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+enum FileLocations {
+  USER
+  CLASS
+  SERVER_SIDE
+  TEMP
+}
+
+model UserFiles {
+  id           Int           @id @default(autoincrement())
+  userId       String
+  fileName     String        @default(cuid())
+  fileLocation FileLocations @default(USER)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

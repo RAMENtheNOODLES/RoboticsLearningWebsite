@@ -1,6 +1,6 @@
 import {PrismaClient} from "@prisma/client";
 
-import {user, school_class, assignment, grade} from "@/app/utils/structures"
+import {user, school_class, assignment, grade, file, FileLocations} from "@/lib/structures"
 
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
@@ -67,77 +67,6 @@ export class Database {
 
     async login(username: string, password: string, ipAddr: string): Promise<string> {
         return ""
-        /*
-        const user = await this.prisma.user.findFirst({
-            where: {
-                name: username
-            }
-        });
-
-        const SESSION_LENGTH_DAYS = 1;
-
-        if (user) {
-
-            if (!AuthUtils.verifyPassword(user.password, password))
-                return "";
-
-            if (!user.lockExpires && user.isLocked)
-                return ""
-
-            if (user.lockExpires && user.isLocked && user.lockExpires > new Date(Date.now())) {
-                return ""
-            } else if (user.lockExpires && user.isLocked && user.lockExpires < new Date(Date.now())) {
-                this.prisma.user.update({
-                    where: {
-                        Id: user.Id
-                    },
-                    data: {
-                        isLocked: false,
-                        lockExpires: null
-                    }
-                });
-            }
-
-            const TOKEN = AuthUtils.generateToken(user.name, user.password);
-
-            const session = await this.prisma.sessions.findFirst({
-                where: {
-                    userId: user.id
-                }
-            });
-
-            if (session && !AuthUtils.verifyPassword(session.ipAddress, ipAddr)) {
-                console.log(`Session: ${session.token}`)
-                return ""
-            }
-            else if (session && AuthUtils.verifyPassword(session.ipAddress, ipAddr)) {
-                return session.token;
-            }
-
-
-            await this.prisma.sessions.create({
-                data: {
-                    ipAddress: AuthUtils.hashPassword(ipAddr),
-                    userId: user.id,
-                    token: TOKEN,
-                    expires: new Date(Date.now() + (1000 * SESSION_LENGTH_DAYS) * 60 * 60 * 24)
-                }
-            })
-
-            await this.prisma.user.update({
-                where: {
-                    id: user.id
-                },
-                data: {
-                    lastLogin: new Date(Date.now())
-                }
-            });
-
-            return AuthUtils.generateToken(user.username, user.password);
-        }
-
-        return "";
-        */
     }
 
     async deleteUser(userId: string, executorId: string, authToken: string) {
@@ -225,6 +154,63 @@ export class Database {
         }).catch(() => {
             return "";
         });
+    }
+
+    async getUserFiles(userId: string): Promise<file[]> {
+        const files = await this.prisma.userFiles.findMany({
+            include: {
+                user: true   
+            },
+            where: {
+                userId: userId
+            }
+        })
+
+        let out: file[] = []
+
+        const u = await this.getUser(files[0].userId)
+
+        files.forEach((f) => {
+            const fl = FileLocations[f.fileLocation]
+
+            out.push(new file(f.id, f.userId, f.fileName, fl, u))
+        })
+
+        return out;
+    }
+
+    getFileLocationFromEnum(fileLocation: string|number|undefined) {
+        if (fileLocation === undefined) {
+            return "TEMP"
+        }
+        
+        switch (fileLocation) {
+            case FileLocations.USER:
+                return "USER"
+            case FileLocations.CLASS:
+                return "CLASS"
+            case FileLocations.SERVER_SIDE:
+                return "SERVER"
+            case FileLocations.TEMP:
+                return "TEMP"
+            default:
+                return "TEMP"
+        }
+    }
+
+    async getFileLocation(fileId: number): Promise<String> {
+        const file = await this.prisma.userFiles.findFirst({
+            where: {
+                id: fileId
+            }
+        })
+
+        if (!file)
+            return ""
+
+        const u = await this.getUser(file.userId)
+
+        return `${globalThis.storedFilesLocation}/${this.getFileLocation(Number(file.fileLocation))}/${u.username}/${file.fileName}`
     }
 
     async getAllClasses() {

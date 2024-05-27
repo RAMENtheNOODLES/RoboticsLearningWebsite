@@ -1,4 +1,4 @@
-import {AuthUtils} from "@/app/utils/database";
+import {AuthUtils} from "@/lib/database";
 
 export class assignment {
     Id: number
@@ -39,6 +39,33 @@ export class assignment {
     toString() {
         return JSON.stringify(this, null, 4)
     }
+}
+
+export enum FileLocations {
+    USER,
+    CLASS,
+    SERVER_SIDE,
+    TEMP,
+}
+
+export class file {
+    Id: number
+    userId: string
+    fileName: string
+    fileLocation: FileLocations
+    user: user
+
+    
+    constructor()
+    constructor(id: number, userId: string, fileName: string, fileLocation: FileLocations, user: user)
+    constructor(id?: number, userId?: string, fileName?: string, fileLocation?: FileLocations, u?: user) {
+        this.Id = id ?? -1
+        this.userId = userId ?? ""
+        this.fileName = fileName ?? ""
+        this.fileLocation = fileLocation ?? FileLocations.USER
+        this.user = u ?? new user()
+    }
+
 }
 
 export class grade {

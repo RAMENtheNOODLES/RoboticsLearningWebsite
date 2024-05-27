@@ -3,8 +3,8 @@
 */
 
 import { assert } from "console"
-import { user, school_class, assignment } from "@/app/utils/structures"
-import { Database } from "@/app/utils/database"
+import { user, school_class, assignment } from "@/lib/structures"
+import { Database } from "@/lib/database"
 
 class HttpTests {
     db = new Database();

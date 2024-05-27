@@ -1,5 +1,5 @@
-import { Database } from "@/app/utils/database";
-import {assignment} from "@/app/utils/structures";
+import { Database } from "@/lib/database";
+import {assignment} from "@/lib/structures";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type ResponseData = {
